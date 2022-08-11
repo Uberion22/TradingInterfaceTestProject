@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 public class UIInventoryTester
 {
     private int inventoryCapacity = 16;
-    private float goldAmount = 200;
+    private float goldAmount = 400;
     private InventoryItemInfo _healingElixirInfo;
     private InventoryItemInfo _axeInfo;
     private UIInventorySlot[] _uiSlots;
@@ -34,7 +34,7 @@ public class UIInventoryTester
     {
         var rSlotIndex = Random.Range(0, slots.Count-1);
         var rSlot = slots[rSlotIndex];
-        var rCount = Random.Range(1, 4);
+        var rCount = Random.Range(3, 5);
         var healingElixir = new HealingElixir(_healingElixirInfo);
         healingElixir.State.Amount = rCount;
         Inventory.TryAddToSlot(this, rSlot, healingElixir);
@@ -47,7 +47,7 @@ public class UIInventoryTester
     {
         var rSlotIndex = Random.Range(0, slots.Count);
         var rSlot = slots[rSlotIndex];
-        var rCount = Random.Range(1, 4);
+        var rCount = Random.Range(2, 4);
         var axe = new Axe(_axeInfo);
         axe.State.Amount = rCount;
         Inventory.TryAddToSlot(this, rSlot, axe);
@@ -60,7 +60,7 @@ public class UIInventoryTester
     {
         var allSlots = Inventory.GetAllSlots();
         var availableSlots = new List<IInventorySlot>(allSlots);
-        var filledSlots = 5;
+        var filledSlots = 7;
         for (int i = 0; i < filledSlots; i++)
         {
             var fieldSlot = AddRandomHealingElixirsIntoRandomSlots(availableSlots);

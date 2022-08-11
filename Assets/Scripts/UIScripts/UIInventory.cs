@@ -27,6 +27,6 @@ public class UIInventory : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        _goldAmountText.text = $"GOLD: {Inventory.GoldAmount}";
+        _goldAmountText.text = _isTrader ? $"TRADER GOLD\n{Inventory.GoldAmount}" : $"PLAYER GOLD\n{Inventory.GoldAmount}";
     }
 }

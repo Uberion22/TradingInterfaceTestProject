@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UIInventorySlot : UISlot
+public class UIInventorySlot : MonoBehaviour, IDropHandler
 {
 
     [SerializeField] private UIInventoryItem _uiInventoryItem;
@@ -22,7 +22,7 @@ public class UIInventorySlot : UISlot
         _uiInventory = GetComponentInParent<UIInventory>();
     }
 
-    public override void OnDrop(PointerEventData eventData)
+    public  void OnDrop(PointerEventData eventData)
     {
         var otherItemUi = eventData.pointerDrag.GetComponent<UIInventoryItem>();
         otherItemUi.ResetParent();
@@ -31,7 +31,7 @@ public class UIInventorySlot : UISlot
         var otherSlot = otherSlotUi.Slot;
         var inventory = _uiInventory.Inventory;
         Debug.Log($"slot : {Slot.Item?.Info.Id}, OtherSlot : {otherSlot.Item?.Info.Id}");
-        if (otherInventory.Inventory.IsTrader != _uiInventory.Inventory.IsTrader)
+        if (otherInventory.Inventory.IsTraderInventory != _uiInventory.Inventory.IsTraderInventory)
         {
             inventory.TransitFromSlotToSlotInTrade(otherInventory.Inventory, otherSlot, Slot);
         }

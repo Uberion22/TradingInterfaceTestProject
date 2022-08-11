@@ -10,15 +10,15 @@ public class InventoryWithSlots : IInventory
     public event Action<object, Type, int> OnInventoryItemRemovedEvent;
     public event Action<object> OnInventoryStateChangedEvent;
     public int Capacity { get; set; }
-    public bool IsTrader;
-    public bool IsFull => _slots.All(s => IsFull);
+    public bool IsTraderInventory;
+    public bool IsFull => _slots.All(s => s.IsFool);
     private List<IInventorySlot> _slots;
     public float GoldAmount;
     public InventoryWithSlots(int capacity, float goldAmount, bool isTrader = false)
     {
         Capacity = capacity;
         _slots = new List<IInventorySlot>();
-        IsTrader = isTrader;
+        IsTraderInventory = isTrader;
         GoldAmount = goldAmount;
         for (int i = 0; i < Capacity; i++)
         {
@@ -58,13 +58,14 @@ public class InventoryWithSlots : IInventory
         OnInventoryStateChangedEvent?.Invoke(sender);
     }
 
-    //public void TransitFromSlotToSlotInTrade(object sender, InventoryWithSlots fromInventory, InventoryWithSlots toInventory, IInventorySlot fromSlot, IInventorySlot toSlot)
     public void TransitFromSlotToSlotInTrade(object sender, IInventorySlot fromSlot, IInventorySlot toSlot)
     {
-        if (fromSlot.IsEmpty || toSlot.IsFool) return;
+        if (fromSlot.IsEmpty || toSlot == null || IsFull) return;
 
-        if (!toSlot.IsEmpty && toSlot.ItemType != fromSlot.ItemType) return;
-
+        if (toSlot.ItemType != null && toSlot.ItemType != fromSlot.ItemType)
+        {
+            toSlot = GetFirstSuitableSlot(fromSlot.Item);
+        }
         var slotCapacity = fromSlot.Capacity;
         var fits = fromSlot.Amount + toSlot.Amount <= slotCapacity;
         var amountToAdd = fits
@@ -72,15 +73,11 @@ public class InventoryWithSlots : IInventory
             : slotCapacity - toSlot.Amount;
         var amountLeft = fromSlot.Amount - amountToAdd;
 
-        //toInventory.RemoveGold(fromSlot.Item);
-        //fromInventory.AddGold(fromSlot.Item);
-        if(!TryRemoveGold(fromSlot.Item)) return;
-        (sender as InventoryWithSlots).AddGold(fromSlot.Item);
+        if(!TryRemoveGold(fromSlot.Item, amountToAdd)) return;
+        (sender as InventoryWithSlots).AddGold(fromSlot.Item, amountToAdd);
         Debug.LogWarning("Trade");
         if (toSlot.IsEmpty)
         {
-            //toInventory.RemoveGold(fromSlot.Item);
-            //fromInventory.AddGold(fromSlot.Item);
             toSlot.SetItem(fromSlot.Item);
             fromSlot.Clear();
             OnInventoryStateChangedEvent?.Invoke(sender);
@@ -94,6 +91,8 @@ public class InventoryWithSlots : IInventory
         else
         {
             fromSlot.Item.State.Amount = amountLeft;
+            var nextSlot = GetFirstSuitableSlot(fromSlot.Item);
+            TransitFromSlotToSlotInTrade(sender, fromSlot, nextSlot);
         }
         OnInventoryStateChangedEvent?.Invoke(sender);
     }
@@ -253,22 +252,38 @@ public class InventoryWithSlots : IInventory
         return item == null;
     }
 
-    public void AddGold(IInventoryItem item)
+    public void AddGold(IInventoryItem item, int itemCount)
     {
-        this.GoldAmount += IsTrader ? item.State.Amount * item.Info.Price : item.State.Amount * item.Info.Price * (100 - item.Info.MarkdownPercentage) / 100.0f;
+        this.GoldAmount += IsTraderInventory ? itemCount * item.Info.Price : itemCount * item.Info.Price * (100 - item.Info.MarkdownPercentage) / 100.0f;
     }
 
-    public bool TryRemoveGold(IInventoryItem item)
+    public bool TryRemoveGold(IInventoryItem item, int itemCount)
     {
-        var result = IsTrader ? item.State.Amount * item.Info.Price * (100 - item.Info.MarkdownPercentage) / 100.0f : item.State.Amount * item.Info.Price;
-
-        if (result >= 0)
+        var result = IsTraderInventory ? itemCount * item.Info.Price * (100 - item.Info.MarkdownPercentage) / 100.0f : itemCount * item.Info.Price;
+        var goldAfterTrade = this.GoldAmount - result;
+        if (goldAfterTrade >= -1000)
         {
-            this.GoldAmount -= result;
+            this.GoldAmount = goldAfterTrade;
             
             return true;
         }
 
         return false;
+    }
+
+    private IInventorySlot GetFirstSuitableSlot(IInventoryItem item)
+    {
+        var emptySlot = _slots.FirstOrDefault(s => s.ItemType == item.Type && s.Amount < s.Capacity) 
+                        ?? _slots.FirstOrDefault(s => s.IsEmpty);
+
+        return emptySlot;
+    }
+
+    public void SetSlots(IInventorySlot[] slots)
+    {
+        for (int i = 0; i < _slots.Count && i < slots.Length; i++)
+        {
+            _slots[i] = slots[i];
+        }
     }
 }
