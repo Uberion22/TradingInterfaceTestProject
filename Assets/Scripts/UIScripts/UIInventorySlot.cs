@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -22,7 +19,7 @@ public class UIInventorySlot : MonoBehaviour, IDropHandler
         _uiInventory = GetComponentInParent<UIInventory>();
     }
 
-    public  void OnDrop(PointerEventData eventData)
+    public void OnDrop(PointerEventData eventData)
     {
         var otherItemUi = eventData.pointerDrag.GetComponent<UIInventoryItem>();
         otherItemUi.ResetParent();
@@ -30,7 +27,6 @@ public class UIInventorySlot : MonoBehaviour, IDropHandler
         var otherSlotUi = otherItemUi.GetComponentInParent<UIInventorySlot>();
         var otherSlot = otherSlotUi.Slot;
         var inventory = _uiInventory.Inventory;
-        Debug.Log($"slot : {Slot.Item?.Info.Id}, OtherSlot : {otherSlot.Item?.Info.Id}");
         if (otherInventory.Inventory.IsTraderInventory != _uiInventory.Inventory.IsTraderInventory)
         {
             inventory.TransitFromSlotToSlotInTrade(otherInventory.Inventory, otherSlot, Slot);

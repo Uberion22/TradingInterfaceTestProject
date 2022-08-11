@@ -6,11 +6,8 @@ using UnityEngine;
 public interface IInventory
 { 
     int Capacity { get; set; }
-
     bool IsFull { get; }
-
     IInventoryItem GetItem(Type itemType);
-
     IInventoryItem[] GetAllItems();
     IInventoryItem[] GetAllItems(Type itemType);
     IInventoryItem[] GetEquippedItems();
