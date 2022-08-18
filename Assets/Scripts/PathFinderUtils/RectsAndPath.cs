@@ -46,8 +46,8 @@ public class RectsAndPath : MonoBehaviour
 
     private void TestRectangleCreator()
     {
-        var start = new Vector2(12, 8f);
-        var end = new Vector2(2.5f, 3.5f);
+        var start = new Vector2(13f, 7.5f);
+        var end = new Vector2(3f, 1f);
         var testData = RectangleData.GetTestData();
         CreateRectanglesAndPath(testData, start, end);
     }
