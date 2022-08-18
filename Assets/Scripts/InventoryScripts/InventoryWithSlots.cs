@@ -263,7 +263,7 @@ public class InventoryWithSlots : IInventory
     {
         var result = IsTraderInventory ? itemCount * item.Info.Price * (100 - item.Info.MarkdownPercentage) / 100.0f : itemCount * item.Info.Price;
         var goldAfterTrade = this.GoldAmount - result;
-        if (goldAfterTrade >= -1000)
+        if (goldAfterTrade >= 0)
         {
             this.GoldAmount = goldAfterTrade;
             
