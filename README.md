@@ -8,5 +8,5 @@
 Используется модификация алгоритма A*.
 
 
-<img https://github.com/Uberion22/TraidingInterfaceTestProject/blob/OnlyTrade/PathFinder.JPG="resources/image.png" width="400" height="40"/>
+<img src="https://github.com/Uberion22/TraidingInterfaceTestProject/blob/OnlyTrade/PathFinder.JPG" width="600" height="400"/>
 
