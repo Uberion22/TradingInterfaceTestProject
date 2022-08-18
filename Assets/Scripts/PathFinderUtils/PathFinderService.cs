@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class PathFinderService : IPathFinder
 {
+    private readonly bool _useEightNeighboringPoints;
+    
+    public PathFinderService(bool useEightNeighboringPoints)
+    {
+        _useEightNeighboringPoints = useEightNeighboringPoints;
+    }
+    
     public IEnumerable<Vector2> GetPath(Vector2 a, Vector2 c, IEnumerable<Edge> edges)
     {
         a = new Vector2(RoundToFraction(a.x, 0.5f), RoundToFraction(a.y, 0.5f));
@@ -16,7 +23,7 @@ public class PathFinderService : IPathFinder
             return new List<Vector2>();
         }
 
-        var graph = GraphCreator.CreateGraph(edges);
+        var graph = GraphCreator.CreateGraph(edges, _useEightNeighboringPoints);
         var path = SearchPath(a, c, graph);
 
         return path;
@@ -59,11 +66,11 @@ public class PathFinderService : IPathFinder
 
             foreach (var nextPoint in pointNeighbors)
             {
-                var newCost = pointsCost[currentPoint] + GetPriority(lastPoint, currentPoint, nextPoint); //+ GetCoast(currentPoint, nextPoint);
+                var newCost = pointsCost[currentPoint] + GetCoast(endPoint, nextPoint) + GetCoast(startPoint, nextPoint);;
                 if (!pointsCost.ContainsKey(nextPoint) || newCost < pointsCost[nextPoint])
                 {
                     pointsCost[nextPoint] = newCost;
-                    var priority = newCost  + GetCoast(endPoint, nextPoint);
+                    var priority = newCost  + GetPriority(lastPoint, currentPoint, nextPoint);
                     previousPoints[nextPoint] = currentPoint;
                     pointsQueue.Enqueue(priority, nextPoint);
                 }
@@ -97,7 +104,7 @@ public class PathFinderService : IPathFinder
             return 0; //0.0001f;
         }
 
-        return 0.001f;//coef /9.7f;
+        return GetCoast(current, next);
     }
 
     private bool PointsOnTheSameLine(Vector2 last, Vector2 current, Vector2 next)
@@ -109,7 +116,7 @@ public class PathFinderService : IPathFinder
 
     private bool IsPointInRectangle(Vector2 current, Vector2 min, Vector2 max)
     {
-        var isPointOnRect = current.x <= max.x && current.y <= max.y && current.x >= min.x && current.y >= min.y;
+        var isPointOnRect = current.x < max.x && current.y < max.y && current.x > min.x && current.y > min.y;
 
         return isPointOnRect;
     }

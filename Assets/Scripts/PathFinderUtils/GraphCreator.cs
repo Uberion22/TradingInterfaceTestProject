@@ -6,11 +6,10 @@ public class GraphCreator
 {
     private const float Step = 0.5f;
 
-    public static Dictionary<Vector2, HashSet<Vector2>> CreateGraph(IEnumerable<Edge> edges)
+    public static Dictionary<Vector2, HashSet<Vector2>> CreateGraph(IEnumerable<Edge> edges, bool useEightNeighboringPoints = true)
     {
-
         var graph = new Dictionary<Vector2, HashSet<Vector2>>();
-        var doorsGraph = CreateGraphByDoors(edges);
+        var doorsGraph = CreateGraphByDoors(edges, useEightNeighboringPoints);
         var created = new HashSet<Rectangle>();
 
         foreach (var edge in edges)
@@ -18,19 +17,19 @@ public class GraphCreator
             if (!created.Contains(edge.First))
             {
                 created.Add(edge.First);
-                CreateGraphPointsByRectangle(edge.First, graph, doorsGraph);
+                CreateGraphPointsByRectangle(edge.First, graph, doorsGraph, useEightNeighboringPoints);
             }
 
             if (created.Contains(edge.Second)) continue;
             created.Add(edge.Second);
-            CreateGraphPointsByRectangle(edge.Second, graph, doorsGraph);
+            CreateGraphPointsByRectangle(edge.Second, graph, doorsGraph, useEightNeighboringPoints);
         }
 
         return graph;
     }
 
     private static void CreateGraphPointsByRectangle(Rectangle rect, Dictionary<Vector2, HashSet<Vector2>> graph,
-        Dictionary<Vector2, HashSet<Vector2>> doorsGraph)
+        Dictionary<Vector2, HashSet<Vector2>> doorsGraph, bool useEightNeighboringPoints)
     {
         float x = rect.Min.x;
         float y = rect.Min.y;
@@ -44,7 +43,7 @@ public class GraphCreator
                     graph.Add(newPoint, new HashSet<Vector2>());
                 }
 
-                var points = GetPointNeighbors(x, y);
+                var points = GetPointNeighbors(x, y, useEightNeighboringPoints);
                 foreach (var point in points)
                 {
                     var isPointBad = !doorsGraph.ContainsKey(point) && !IsPointInRectangle(point, rect.Min, rect.Max);
@@ -59,13 +58,12 @@ public class GraphCreator
 
                 y += Step;
             }
-
             x += Step;
             y = rect.Min.y;
         }
     }
 
-    public static Dictionary<Vector2, HashSet<Vector2>> CreateGraphByDoors(IEnumerable<Edge> edges)
+    public static Dictionary<Vector2, HashSet<Vector2>> CreateGraphByDoors(IEnumerable<Edge> edges, bool useEightNeighboringPoints)
     {
         var graph = new Dictionary<Vector2, HashSet<Vector2>>();
         foreach (var edge in edges)
@@ -79,7 +77,7 @@ public class GraphCreator
                 y = edge.Start.y + Step;
                 while (y < edge.End.y)
                 {
-                    AddPointToDoorsGraph(graph, x, y);
+                    AddPointToDoorsGraph(graph, x, y, useEightNeighboringPoints);
                     y += Step;
                 }
             }
@@ -89,7 +87,7 @@ public class GraphCreator
                 y = edge.Start.y;
                 while (x < edge.End.x)
                 {
-                    AddPointToDoorsGraph(graph, x, y);
+                    AddPointToDoorsGraph(graph, x, y, useEightNeighboringPoints);
                     x += Step;
                 }
             }
@@ -98,7 +96,7 @@ public class GraphCreator
         return graph;
     }
 
-    private static void AddPointToDoorsGraph(Dictionary<Vector2, HashSet<Vector2>> graph, float x, float y)
+    private static void AddPointToDoorsGraph(Dictionary<Vector2, HashSet<Vector2>> graph, float x, float y, bool useEightNeighboringPoints)
     {
         var newPoint = new Vector2(x, y);
         if (!graph.ContainsKey(newPoint))
@@ -106,7 +104,7 @@ public class GraphCreator
             graph.Add(newPoint, new HashSet<Vector2>());
         }
 
-        var points = GetPointNeighbors(x, y);
+        var points = GetPointNeighbors(x, y, useEightNeighboringPoints);
         foreach (var point in points)
         {
             if (graph[newPoint].Contains(point))
@@ -117,19 +115,25 @@ public class GraphCreator
         }
     }
 
-    public static List<Vector2> GetPointNeighbors(float x, float y)
+    public static List<Vector2> GetPointNeighbors(float x, float y, bool useEightNeighboringPoints)
     {
         var result = new List<Vector2>
         {
-            new Vector2(x - Step, y - Step),
             new Vector2(x - Step, y),
-            new Vector2(x - Step, y + Step),
             new Vector2(x, y + Step),
-            new Vector2(x + Step, y + Step),
             new Vector2(x + Step, y),
-            new Vector2(x + Step, y - Step),
             new Vector2(x, y - Step)
         };
+        if (useEightNeighboringPoints)
+        {
+            result.AddRange(new []
+            {
+                new Vector2(x - Step, y - Step),
+                new Vector2(x - Step, y + Step),
+                new Vector2(x + Step, y + Step),
+                new Vector2(x + Step, y - Step),
+            });
+        }
 
         return result;
     }

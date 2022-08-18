@@ -33,7 +33,8 @@ public class RectsAndPath : MonoBehaviour
         {
             DrawRect(rect.First);
         }
-        var pathFinder = new PathFinderService();
+        //использовать восемь соседних точек вместо 4
+        var pathFinder = new PathFinderService(true);
         var _path = pathFinder.GetPath(startPoint, endPoint, edges).ToArray();
         
         if(!_path.Any()) return;
@@ -45,8 +46,8 @@ public class RectsAndPath : MonoBehaviour
 
     private void TestRectangleCreator()
     {
-        var start = new Vector2(13.5f, 7.5f);
-        var end = new Vector2(3.1f, 1.1f);
+        var start = new Vector2(12, 8f);
+        var end = new Vector2(2.5f, 3.5f);
         var testData = RectangleData.GetTestData();
         CreateRectanglesAndPath(testData, start, end);
     }
